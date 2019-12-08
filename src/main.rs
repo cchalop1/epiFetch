@@ -22,13 +22,15 @@ const FILE_AUTOLOGIN: &str = "autologin";
 #[structopt(name = "epiFetch")]
 #[allow(non_camel_case_types)]
 enum Opt {
-    /// fetch user information
+    /// Display user information
     user,
-    /// fetch all group and put id for have more detail
+    /// Display all current project and for see detail put <id> after project
     project {
         idx: Option<i32>,
     },
+    /// Display all your notes
     notes,
+    /// Display all your modules
     modules
 }
 
