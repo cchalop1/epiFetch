@@ -7,10 +7,13 @@ extern crate rpassword;
 extern crate rustc_serialize;
 extern crate structopt;
 
+#[macro_use]
+extern crate serde_json;
+
 mod data;
 mod header;
 
-use data::{Blih, Board, Home, ModulesNotes, NewRepo, Pass, Repos, User, BlihData};
+use data::{Blih, BlihData, BlihResponse, Board, Home, ModulesNotes, Pass, Repos, User};
 
 use crypto::digest::Digest;
 use crypto::hmac::Hmac;
@@ -42,7 +45,7 @@ enum Opt {
     /// Display all your modules
     modules,
     /// Dispaly all repos on blih
-    /// Create new Repo on blih and pass option if you want give right to ramasage tek
+    ///  
     repo { repo_name: Option<String> },
 }
 
@@ -70,34 +73,45 @@ fn start() {
     };
 }
 
+fn json_for_create_repo(name: &String) -> String {
+    format!("{{\n    \"name\": \"{}\",\n    \"type\": \"git\"\n}}", name)
+}
+
 fn fetch_create_repo(pass: &Pass, repo_name: String) {
-    let repo = NewRepo {
-        name: repo_name,
-        repo_type: format!("git"),
-    };
-     let data: BlihData = BlihData {
+    let data: BlihData = BlihData {
         user: format!("{}", &pass.login),
-        // update signature with new new data indent
-        signature: format!("{}", &pass.passwd),
-        data: repo,
+        signature: do_hamxc_login_passwd(
+            &pass.passwd,
+            &pass.login,
+            Some(json_for_create_repo(&repo_name)),
+        ),
+        data: json!({"name": &repo_name, "type": "git"}),
     };
-    // println!("{:#?}", data);
     let url: String = builder_url_blih(&BLIH_URL, "/repositories");
-    let resp = reqwest::Client::new()
+    let resp: BlihResponse = reqwest::Client::new()
         .post(&url[..])
         .header("Content-Type", "application/json")
         .body(serde_json::to_string(&data).unwrap())
         .send()
         .unwrap()
-        .text()
+        .json()
         .unwrap();
-    println!("{}", resp);
+    if let Some(error) = resp.error {
+        println!("{}", error);
+    }
+    if let Some(message) = resp.message{
+        println!("{}", message);
+        println!("git@git.epitech.eu:/{}/{}", pass.login, repo_name);
+    }
 }
+
+// Todo
+// fn fetch_right_repo
 
 fn fetch_repos(pass: &Pass) -> Repos {
     let data: Blih = Blih {
         user: format!("{}", &pass.login),
-        signature: format!("{}", &pass.passwd),
+        signature: do_hamxc_login_passwd(&pass.passwd, &pass.login, None),
     };
     let url: String = builder_url_blih(&BLIH_URL, "/repositories");
     reqwest::Client::new()
@@ -149,10 +163,12 @@ fn hash_passwd(raw_passwd: &String) -> String {
     sha.result_str()
 }
 
-fn do_hamxc_login_passwd(passwd: &String, login: &String) -> String {
+fn do_hamxc_login_passwd(passwd: &String, login: &String, data: Option<String>) -> String {
     let mut hmac = Hmac::new(Sha512::new(), &passwd.as_bytes());
-    hmac.input(&login.as_bytes());
-    // TODO: test re instet
+    hmac.input(format!("{}", login).as_bytes());
+    if let Some(data) = data {
+        hmac.input(format!("{}", data).as_bytes());
+    }
     hmac.result().code().to_hex()
 }
 
@@ -168,7 +184,7 @@ fn create_file_and_prompt_info(config_file_path: String) -> Pass {
     login.pop();
     print!("Your epitech password ?\n");
     let mut passwd = rpassword::read_password().unwrap();
-    passwd = do_hamxc_login_passwd(&hash_passwd(&passwd), &login);
+    passwd = hash_passwd(&passwd);
 
     let pass: Pass = Pass {
         autologin: autologin,

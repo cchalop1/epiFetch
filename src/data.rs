@@ -102,24 +102,17 @@ pub struct Blih {
     pub signature: String,
 }
 
-// #[derive(Serialize, Debug)]
-// pub struct BlihData<T> {
-//     pub user: String,
-//     pub signature: String,
-//     pub data: <T>,
-// }
-
 #[derive(Serialize, Debug)]
 pub struct BlihData {
     pub user: String,
     pub signature: String,
-    pub data: NewRepo,
+    pub data: serde_json::Value,
 }
 
-#[derive(Serialize, Debug)]
-pub struct NewRepo {
-    pub name: String,
-    pub repo_type: String,
+#[derive(Deserialize, Debug)]
+pub struct BlihResponse {
+    pub message: Option<String>,
+    pub error: Option<String>,
 }
 
 impl User {
