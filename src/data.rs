@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
 
-#[derive(Deserialize,Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct Pass {
     pub autologin: String,
     pub login: String,
@@ -34,6 +34,7 @@ pub struct Home {
 #[derive(Deserialize, Debug)]
 pub struct Board {
     projets: Vec<Projet>,
+    activites: Vec<Activites>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -45,6 +46,21 @@ pub struct Projet {
     timeline_barre: String,
     date_inscription: Value,
     id_activite: String,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct Activites {
+    title: String,
+    module: String,
+    module_link: String,
+    module_code: String,
+    title_link: String,
+    timeline_start: String,
+    timeline_end: String,
+    timeline_barre: String,
+    salle: String,
+    token: Option<String>,
+    token_link: String,
 }
 
 #[derive(Deserialize, Debug)]
@@ -170,6 +186,51 @@ impl Board {
                     format!("|{}|{}%", parce_timeline(&nbr), &nbr)
                 ]);
                 table.add_row(row!["Date_inscription: ", proj.date_inscription]);
+                table.printstd();
+            }
+            None => panic!("there is no project with this id"),
+        }
+    }
+
+    pub fn print_activity(&self) {
+        let mut table = Table::new();
+        table.set_format(format_display_table());
+        table.add_row(row!["ID", "ACTIVITY_NAME", "TIMELINE_BARRE"]);
+        table.add_row(row!["--", "-------------", "--------------"]);
+        for (idx, activite) in self.activites.iter().enumerate() {
+            let nbr: String = parce_json_float_to_string(&activite.timeline_barre);
+            table.add_row(row![
+                idx,
+                activite.title,
+                format!("|{}|{}%", parce_timeline(&nbr), &nbr)
+            ]);
+        }
+        print!("\n");
+        table.printstd();
+    }
+
+    pub fn print_activity_detail(&self, idx: i32, autologin_url: &String) {
+        match self.activites.get(idx as usize) {
+            Some(activite) => {
+                let mut table = Table::new();
+                let nbr: String = parce_json_float_to_string(&activite.timeline_barre);
+                table.set_format(format_display());
+                table.add_row(row!["Title: ", activite.title]);
+                table.add_row(row![
+                    "Link: ",
+                    format!("{}{}project/", autologin_url, activite.title_link)
+                ]);
+                table.add_row(row!["Start_Time: ", activite.timeline_start]);
+                table.add_row(row!["End_Time: ", activite.timeline_end]);
+                table.add_row(row![
+                    "Time_Barre: ",
+                    format!("|{}|{}%", parce_timeline(&nbr), &nbr)
+                ]);
+                table.add_row(row!["Salle: ", activite.salle]);
+                match &activite.token {
+                    Some(token) => table.add_row(row!["token: ", token]),
+                    None => table.add_row(row!["token: ", "null"]),
+                };
                 table.printstd();
             }
             None => panic!("there is no project with this id"),
