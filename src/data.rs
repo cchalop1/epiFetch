@@ -34,6 +34,7 @@ pub struct Home {
 #[derive(Deserialize, Debug)]
 pub struct Board {
     projets: Vec<Projet>,
+    // activites: Vec<Activites>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -45,6 +46,21 @@ pub struct Projet {
     timeline_barre: String,
     date_inscription: Value,
     id_activite: String,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct Activites {
+    title: String,
+    module: String,
+    module_link: String,
+    module_code: String,
+    title_link: String,
+    timeline_start: String,
+    timeline_end: String,
+    timeline_barre: String,
+    salle: String,
+    token: String,
+    token_link: String,
 }
 
 #[derive(Deserialize, Debug)]
@@ -175,6 +191,23 @@ impl Board {
             None => panic!("there is no project with this id"),
         }
     }
+
+    // pub fn print_activity(&self) {
+    //     let mut table = Table::new();
+    //     table.set_format(format_display_table());
+    //     table.add_row(row!["ID", "ACTIVITY_NAME", "TIMELINE_BARRE"]);
+    //     table.add_row(row!["--", "-------------", "--------------"]);
+    //     for (idx, activite) in self.activites.iter().enumerate() {
+    //         let nbr: String = parce_json_float_to_string(&activite.timeline_barre);
+    //         table.add_row(row![
+    //             idx,
+    //             activite.title,
+    //             format!("|{}|{}%", parce_timeline(&nbr), &nbr)
+    //         ]);
+    //     }
+    //     print!("\n");
+    //     table.printstd();
+    // }
 }
 
 impl ModulesNotes {

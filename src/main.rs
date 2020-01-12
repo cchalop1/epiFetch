@@ -1,10 +1,15 @@
 #[macro_use]
 extern crate prettytable;
+<<<<<<< HEAD
 extern crate crypto;
 extern crate dirs;
 extern crate reqwest;
 extern crate rpassword;
 extern crate rustc_serialize;
+=======
+extern crate dirs;
+extern crate reqwest;
+>>>>>>> wip activity
 extern crate structopt;
 
 #[macro_use]
@@ -40,6 +45,8 @@ enum Opt {
     user,
     /// Display all current project and for see detail put <id> after project
     project { idx: Option<i32> },
+    /// Display all activites
+    activity,
     /// Display all your notes
     notes,
     /// Display all your modules
