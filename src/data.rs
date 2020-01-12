@@ -1,6 +1,14 @@
-use serde::{Deserialize};
-use serde_json::Value;
 use prettytable::{format, Table};
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
+use std::collections::HashMap;
+
+#[derive(Deserialize,Serialize, Debug)]
+pub struct Pass {
+    pub autologin: String,
+    pub login: String,
+    pub passwd: String,
+}
 
 #[derive(Deserialize, Debug)]
 pub struct Gpa {
@@ -57,11 +65,54 @@ pub struct Note {
     final_note: f32,
 }
 
-
 #[derive(Deserialize, Debug)]
 pub struct ModulesNotes {
     modules: Vec<Module>,
     notes: Vec<Note>,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct Repo {
+    url: String,
+    uuid: String,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct Repos {
+    message: String,
+    repositories: HashMap<String, Repo>,
+}
+
+impl Repos {
+    pub fn print_repos(&self) {
+        let mut table = Table::new();
+        table.set_format(format_display_table());
+        table.add_row(row!["ID", "REPO_NAME"]);
+        table.add_row(row!["--", "---------"]);
+        for (idx, repo) in self.repositories.keys().enumerate() {
+            table.add_row(row![idx, repo]);
+        }
+        table.printstd();
+    }
+}
+
+#[derive(Serialize, Debug)]
+pub struct Blih {
+    pub user: String,
+    pub signature: String,
+}
+
+#[derive(Serialize, Debug)]
+pub struct BlihData {
+    pub user: String,
+    pub signature: String,
+    pub data: serde_json::Value,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct BlihResponse {
+    pub message: Option<String>,
+    pub error: Option<String>,
 }
 
 impl User {
@@ -91,8 +142,12 @@ impl Board {
         table.add_row(row!["--", "------------", "--------------"]);
         for (idx, project) in self.projets.iter().enumerate() {
             let nbr: String = parce_json_float_to_string(&project.timeline_barre);
-            table.add_row(row![idx, project.title, format!("|{}|{}%", parce_timeline(&nbr), &nbr)]);
-        };
+            table.add_row(row![
+                idx,
+                project.title,
+                format!("|{}|{}%", parce_timeline(&nbr), &nbr)
+            ]);
+        }
         print!("\n");
         table.printstd();
     }
@@ -104,14 +159,20 @@ impl Board {
                 let nbr: String = parce_json_float_to_string(&proj.timeline_barre);
                 table.set_format(format_display());
                 table.add_row(row!["Title: ", proj.title]);
-                table.add_row(row!["Link: ", format!("{}{}project/", autologin_url ,proj.title_link)]);
+                table.add_row(row![
+                    "Link: ",
+                    format!("{}{}project/", autologin_url, proj.title_link)
+                ]);
                 table.add_row(row!["Start_Time: ", proj.timeline_start]);
                 table.add_row(row!["End_Time: ", proj.timeline_end]);
-                table.add_row(row!["Time_Barre: ", format!("|{}|{}%", parce_timeline(&nbr), &nbr)]);
+                table.add_row(row![
+                    "Time_Barre: ",
+                    format!("|{}|{}%", parce_timeline(&nbr), &nbr)
+                ]);
                 table.add_row(row!["Date_inscription: ", proj.date_inscription]);
                 table.printstd();
-            },
-            None => panic!("there is no project with this id")
+            }
+            None => panic!("there is no project with this id"),
         }
     }
 }
@@ -123,8 +184,14 @@ impl ModulesNotes {
         table.add_row(row!["TITLE", "MODULES", "DATE", "SCOLARYEAR", "NOTE"]);
         table.add_row(row!["-----", "-------", "----", "----------", "----"]);
         for note in self.notes.iter() {
-            table.add_row(row![note.title, note.titlemodule, note.date, note.scolaryear, note.final_note]);
-        };
+            table.add_row(row![
+                note.title,
+                note.titlemodule,
+                note.date,
+                note.scolaryear,
+                note.final_note
+            ]);
+        }
         print!("\n");
         table.printstd();
     }
@@ -135,8 +202,14 @@ impl ModulesNotes {
         table.add_row(row!["TITLE", "DATE", "SCOLARYEAR", "GRADE", "CREDIT"]);
         table.add_row(row!["-----", "----", "----------", "-----", "------"]);
         for mode in self.modules.iter() {
-            table.add_row(row![mode.title, mode.date_ins, mode.scolaryear, mode.grade, mode.credits]);
-        };
+            table.add_row(row![
+                mode.title,
+                mode.date_ins,
+                mode.scolaryear,
+                mode.grade,
+                mode.credits
+            ]);
+        }
         print!("\n");
         table.printstd();
     }
@@ -146,9 +219,10 @@ fn format_display() -> format::TableFormat {
     format::FormatBuilder::new()
         .column_separator(' ')
         .borders(' ')
-        .separators(&[format::LinePosition::Top,
-                      format::LinePosition::Bottom],
-                    format::LineSeparator::new(' ', ' ', ' ', ' '))
+        .separators(
+            &[format::LinePosition::Top, format::LinePosition::Bottom],
+            format::LineSeparator::new(' ', ' ', ' ', ' '),
+        )
         .padding(0, 0)
         .build()
 }
@@ -157,9 +231,10 @@ fn format_display_table() -> format::TableFormat {
     format::FormatBuilder::new()
         .column_separator('|')
         .borders('|')
-        .separators(&[format::LinePosition::Top,
-                      format::LinePosition::Bottom],
-                    format::LineSeparator::new('-', '+', '+', '+'))
+        .separators(
+            &[format::LinePosition::Top, format::LinePosition::Bottom],
+            format::LineSeparator::new('-', '+', '+', '+'),
+        )
         .padding(2, 2)
         .build()
 }
@@ -167,10 +242,10 @@ fn format_display_table() -> format::TableFormat {
 fn parce_timeline(nbr: &String) -> String {
     let max: i32 = nbr.parse().unwrap();
 
-    (0..10).map(|i| {
-        match i * 10 < max {
+    (0..10)
+        .map(|i| match i * 10 < max {
             true => 35 as char,
-            false => 32 as char
-        }
-    }).collect()
+            false => 32 as char,
+        })
+        .collect()
 }
