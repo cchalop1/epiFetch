@@ -1,15 +1,10 @@
 #[macro_use]
 extern crate prettytable;
-<<<<<<< HEAD
 extern crate crypto;
 extern crate dirs;
 extern crate reqwest;
 extern crate rpassword;
 extern crate rustc_serialize;
-=======
-extern crate dirs;
-extern crate reqwest;
->>>>>>> wip activity
 extern crate structopt;
 
 #[macro_use]
@@ -46,7 +41,7 @@ enum Opt {
     /// Display all current project and for see detail put <id> after project
     project { idx: Option<i32> },
     /// Display all activites
-    activity,
+    activity { idx: Option<i32> },
     /// Display all your notes
     notes,
     /// Display all your modules
@@ -68,9 +63,13 @@ fn start() {
     match matches {
         Opt::user => fetch_user(&pass.autologin).print(),
         Opt::project { idx } => match idx {
-            Some(idx) => fetch_project(&pass.autologin).print_project_detail(idx, &pass.autologin),
-            None => fetch_project(&pass.autologin).print_projects(),
+            Some(idx) => fetch_home(&pass.autologin).print_project_detail(idx, &pass.autologin),
+            None => fetch_home(&pass.autologin).print_projects(),
         },
+        Opt::activity { idx } => match idx {
+            Some(idx) => fetch_home(&pass.autologin).print_activity_detail(idx, &pass.autologin),
+            None => fetch_home(&pass.autologin).print_activity(),
+        }, 
         Opt::notes => fetch_note_modules(&pass.autologin).print_notes(),
         Opt::modules => fetch_note_modules(&pass.autologin).print_modules(),
         Opt::repo { repo_name } => match repo_name {
@@ -131,7 +130,7 @@ fn fetch_repos(pass: &Pass) -> Repos {
         .unwrap()
 }
 
-fn fetch_project(autologin_url: &String) -> Board {
+fn fetch_home(autologin_url: &String) -> Board {
     let url: String = builder_url_autologin(&autologin_url, "");
     let home: Home = reqwest::get(&url[..]).unwrap().json().unwrap();
     home.board
