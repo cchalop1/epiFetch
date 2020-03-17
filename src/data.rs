@@ -34,7 +34,7 @@ pub struct Home {
 #[derive(Deserialize, Debug)]
 pub struct Board {
     projets: Vec<Projet>,
-    activites: Vec<Activites>,
+    pub activites: Vec<Activites>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -50,7 +50,7 @@ pub struct Projet {
 
 #[derive(Deserialize, Debug)]
 pub struct Activites {
-    title: String,
+    pub title: String,
     module: String,
     module_link: String,
     module_code: String,
@@ -228,8 +228,16 @@ impl Board {
                 ]);
                 table.add_row(row!["Salle: ", activite.salle]);
                 match &activite.token {
-                    Some(token) => table.add_row(row!["token: ", token]),
-                    None => table.add_row(row!["token: ", "null"]),
+                    Some(token) => {
+                        table.add_row(row!["token: ", &token]);
+                        if &token[..] == "1" {
+                            table.add_row(row!["token: ", token]);
+                            println!("{}", token);
+                        }
+                    },
+                    None => {
+                        table.add_row(row!["token: ", "null"]);
+                    }
                 };
                 table.printstd();
             }

@@ -49,6 +49,8 @@ enum Opt {
     /// Dispaly all repos on blih
     ///  
     repo { repo_name: Option<String> },
+    /// enter one token
+    token { idx: Option<i32> },
 }
 
 fn main() {
@@ -69,18 +71,29 @@ fn start() {
         Opt::activity { idx } => match idx {
             Some(idx) => fetch_home(&pass.autologin).print_activity_detail(idx, &pass.autologin),
             None => fetch_home(&pass.autologin).print_activity(),
-        }, 
+        },
         Opt::notes => fetch_note_modules(&pass.autologin).print_notes(),
         Opt::modules => fetch_note_modules(&pass.autologin).print_modules(),
         Opt::repo { repo_name } => match repo_name {
             Some(repo_name) => fetch_create_repo(&pass, repo_name),
             None => fetch_repos(&pass).print_repos(),
         },
+        Opt::token { idx } => match idx {
+            Some(idx) => println!("{}", idx),
+            None => fetch_all_token_open(&pass.autologin),
+        },
     };
 }
 
 fn json_for_create_repo(name: &String) -> String {
     format!("{{\n    \"name\": \"{}\",\n    \"type\": \"git\"\n}}", name)
+}
+
+fn json_for_right_repo(right: &String, user: &String) -> String {
+    format!(
+        "{{\n    \"acl\": \"{}\",\n    \"user\": \"{}\"\n}}",
+        right, user
+    )
 }
 
 fn fetch_create_repo(pass: &Pass, repo_name: String) {
@@ -105,14 +118,40 @@ fn fetch_create_repo(pass: &Pass, repo_name: String) {
     if let Some(error) = resp.error {
         println!("{}", error);
     }
-    if let Some(message) = resp.message{
+    if let Some(message) = resp.message {
         println!("{}", message);
         println!("git@git.epitech.eu:/{}/{}", pass.login, repo_name);
+        fetch_right_repo(&pass, repo_name, format!("ramassage-tek"), format!("r"));
     }
 }
 
-// Todo
-// fn fetch_right_repo
+fn fetch_right_repo(pass: &Pass, repo_name: String, user: String, user_right: String) {
+    let data: BlihData = BlihData {
+        user: format!("{}", &pass.login),
+        signature: do_hamxc_login_passwd(
+            &pass.passwd,
+            &pass.login,
+            Some(json_for_right_repo(&user_right, &user)),
+        ),
+        data: json!({"user": &user, "acl": &user_right}),
+    };
+    let url_path: &str = &format!("/repository/{}/acls", repo_name)[..];
+    let url: String = builder_url_blih(&BLIH_URL, url_path);
+    let resp: BlihResponse = reqwest::Client::new()
+        .post(&url[..])
+        .header("Content-Type", "application/json")
+        .body(serde_json::to_string(&data).unwrap())
+        .send()
+        .unwrap()
+        .json()
+        .unwrap();
+    if let Some(error) = resp.error {
+        println!("{}", error);
+    }
+    if let Some(message) = resp.message {
+        println!("{}", message);
+    }
+}
 
 fn fetch_repos(pass: &Pass) -> Repos {
     let data: Blih = Blih {
@@ -134,6 +173,14 @@ fn fetch_home(autologin_url: &String) -> Board {
     let url: String = builder_url_autologin(&autologin_url, "");
     let home: Home = reqwest::get(&url[..]).unwrap().json().unwrap();
     home.board
+}
+
+fn fetch_all_token_open(autologin_url: &String) {
+    let url: String = builder_url_autologin(&autologin_url, "");
+    let home: Home = reqwest::get(&url[..]).unwrap().json().unwrap();
+    for act in home.board.activites.iter() {
+        println!("{:?}", act);
+    }
 }
 
 fn fetch_user(autologin_url: &String) -> User {
