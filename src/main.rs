@@ -46,9 +46,15 @@ enum Opt {
     notes,
     /// Display all your modules
     modules,
-    /// Dispaly all repos on blih
-    ///  
+    /// Dispaly all repos on blih 
+    /// <repo_name> for create
     repo { repo_name: Option<String> },
+    /// Set ripo right <repo name> <user> <user_right>
+    setacl {
+        repo_name: String,
+        user: String,
+        user_right: String,
+    },
     /// enter one token
     token { idx: Option<i32> },
 }
@@ -78,6 +84,11 @@ fn start() {
             Some(repo_name) => fetch_create_repo(&pass, repo_name),
             None => fetch_repos(&pass).print_repos(),
         },
+        Opt::setacl {
+            repo_name,
+            user,
+            user_right,
+        } => fetch_right_repo(&pass, repo_name, user, user_right),
         Opt::token { idx } => match idx {
             Some(idx) => println!("{}", idx),
             None => fetch_all_token_open(&pass.autologin),
