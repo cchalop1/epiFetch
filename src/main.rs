@@ -13,7 +13,7 @@ extern crate serde_json;
 mod data;
 mod header;
 
-use data::{Blih, BlihData, BlihResponse, Board, Home, ModulesNotes, Pass, Repos, User};
+use data::{Blih, BlihData, BlihResponse, Board, Document, Home, ModulesNotes, Pass, Repos, User};
 
 use crypto::digest::Digest;
 use crypto::hmac::Hmac;
@@ -39,14 +39,17 @@ enum Opt {
     /// Display user information
     user,
     /// Display all current project and for see detail put <id> after project
-    project { idx: Option<i32> },
+    project {
+        idx: Option<i32>,
+        dl: Option<String>,
+    },
     /// Display all activites
     activity { idx: Option<i32> },
     /// Display all your notes
     notes,
     /// Display all your modules
     modules,
-    /// Dispaly all repos on blih 
+    /// Dispaly all repos on blih
     /// <repo_name> for create
     repo { repo_name: Option<String> },
     /// Set ripo right <repo name> <user> <user_right>
@@ -70,9 +73,17 @@ fn start() {
 
     match matches {
         Opt::user => fetch_user(&pass.autologin).print(),
-        Opt::project { idx } => match idx {
-            Some(idx) => fetch_home(&pass.autologin).print_project_detail(idx, &pass.autologin),
-            None => fetch_home(&pass.autologin).print_projects(),
+        Opt::project { idx, dl } => match (idx, dl) {
+            (Some(idx), None) => {
+                fetch_home(&pass.autologin).print_project_detail(idx, &pass.autologin)
+            }
+            (None, Some(_dl)) => println!("pleas give me project id"),
+            (Some(idx), Some(dl)) => {
+                if dl == "dl" {
+                    download_project_file(idx, &pass.autologin)
+                }
+            }
+            (None, None) => fetch_home(&pass.autologin).print_projects(),
         },
         Opt::activity { idx } => match idx {
             Some(idx) => fetch_home(&pass.autologin).print_activity_detail(idx, &pass.autologin),
@@ -178,6 +189,28 @@ fn fetch_repos(pass: &Pass) -> Repos {
         .unwrap()
         .json()
         .unwrap()
+}
+
+fn download_project_file(idx: i32, autologin_url: &String) {
+    let url: String = builder_url_autologin(&autologin_url, "");
+    let home: Home = reqwest::get(&url[..]).unwrap().json().unwrap();
+
+    match home.board.projets.get(idx as usize) {
+        Some(project) => {
+            let url_document: String = builder_url_autologin(
+                &autologin_url,
+                &format!("{}{}", project.title_link, "project/file")[..],
+            );
+            let documents: Vec<Document> = reqwest::get(&url_document[..]).unwrap().json().unwrap();
+            for doc in documents {
+                let url_file = format!("https://intra.epitech.eu{}", &doc.fullpath[..]);
+                let mut resp = reqwest::get(&url_file[..]).expect("request failed");
+                let mut out = File::create(&doc.title[..]).expect("failed to create file");
+                io::copy(&mut resp, &mut out).expect("failed to copy content");
+            };
+        }
+        None => return,
+    }
 }
 
 fn fetch_home(autologin_url: &String) -> Board {

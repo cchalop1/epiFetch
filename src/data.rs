@@ -33,19 +33,19 @@ pub struct Home {
 
 #[derive(Deserialize, Debug)]
 pub struct Board {
-    projets: Vec<Projet>,
+    pub projets: Vec<Projet>,
     pub activites: Vec<Activites>,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct Projet {
-    title: String,
-    title_link: String,
-    timeline_start: String,
-    timeline_end: String,
-    timeline_barre: String,
-    date_inscription: Value,
-    id_activite: String,
+    pub title: String,
+    pub title_link: String,
+    pub timeline_start: String,
+    pub timeline_end: String,
+    pub timeline_barre: String,
+    pub date_inscription: Value,
+    pub id_activite: String,
 }
 
 #[derive(Deserialize, Debug)]
@@ -61,6 +61,12 @@ pub struct Activites {
     salle: String,
     token: Option<String>,
     token_link: String,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct Document {
+    pub title: String,
+    pub fullpath: String,
 }
 
 #[derive(Deserialize, Debug)]
