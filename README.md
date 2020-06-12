@@ -1,5 +1,6 @@
 # EpiFetch
-Epitech intra command line interface
+
+`epifetch` is epitech intra command line interface
 
 EpiFetch is cli to interact with epitech intranet I created it because I'm lazy to open a browser to get a simple information and it's much faster.
 
@@ -9,7 +10,7 @@ EpiFetch is cli to interact with epitech intranet I created it because I'm lazy 
 ./epiftech
 ```
 
-![](epifetch.png)
+![](epiFetch.png)
 
 - You must have a ~/{user}/.config your autologin is store here 
 - You can move epifetch to /bin for access everywhere or create an alias
@@ -19,10 +20,12 @@ EpiFetch is cli to interact with epitech intranet I created it because I'm lazy 
 Command| Does...
 :-----:|:-----:
 `user`|Display user information
-`project`|Display all current project and for see detail put <id> after project
+`project`|Display all current project and for see detail put id after project `epifetch project <project id>`
 `notes`|Display all your notes
 `modules`|Display all your modules
-
+`activity`|Display all your activity
+`setacl`| for set wirte on blih ripository `epifetch setact <repo name> <user> <user_right>`
+`repo`| list all repository on blih server add `epifetch repo <name new repo>` for create new repo
 ### Contributing
 
 1. Fork it (<https://github.com/cchalop1/epifetch/fork>)
