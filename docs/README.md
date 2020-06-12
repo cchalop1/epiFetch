@@ -5,6 +5,7 @@
 EpiFetch is cli to interact with epitech intranet I created it because I'm lazy to open a browser to get a simple information and it's much faster.
 
 [click here for install](https://github.com/cchalop1/epiFetch/releases)
+[click here for read documentation](https://cchalop1.github.io/epiFetch/#/)
 
 ```
 ./epiftech
@@ -26,6 +27,8 @@ Command| Does...
 `activity`|Display all your activity
 `setacl`| for set wirte on blih ripository `epifetch setact <repo name> <user> <user_right>`
 `repo`| list all repository on blih server add `epifetch repo <name new repo>` for create new repo
+
+
 ### Contributing
 
 1. Fork it (<https://github.com/cchalop1/epifetch/fork>)
