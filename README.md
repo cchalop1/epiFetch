@@ -5,6 +5,7 @@
 EpiFetch is cli to interact with epitech intranet I created it because I'm lazy to open a browser to get a simple information and it's much faster.
 
 [click here for install](https://github.com/cchalop1/epiFetch/releases)
+
 [click here for read documentation](https://cchalop1.github.io/epiFetch/#/)
 
 ```
