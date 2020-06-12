@@ -1,8 +1,8 @@
 # EpiFetch
 
-`epifetch` is epitech intra command line interface
+`epifetch` is a command line interface for the Epitech intranet.
 
-EpiFetch is cli to interact with epitech intranet I created it because I'm lazy to open a browser to get a simple information and it's much faster.
+EpiFetch is a cli to interact with the Epitech intranet. I created it because I'm lazy to open a browser to get a simple information and it's much faster.
 
 [click here for install](https://github.com/cchalop1/epiFetch/releases)
 
@@ -14,20 +14,20 @@ EpiFetch is cli to interact with epitech intranet I created it because I'm lazy 
 
 ![](epiFetch.png)
 
-- You must have a ~/{user}/.config your autologin is store here 
-- You can move epifetch to /bin for access everywhere or create an alias
+- You must have your autologin in ~/{user}/.config
+- You can move epifetch to /bin to access it from everywhere or create an alias
 
 ### List of commands available presently
 
 Command| Does...
 :-----:|:-----:
 `user`|Display user information
-`project`|Display all current project and for see detail put id after project `epifetch project <project id>`
-`notes`|Display all your notes
+`project`|Display all current projects and to see the details put the id after the project `epifetch project <project id>`
+`notes`|Display all your marks
 `modules`|Display all your modules
-`activity`|Display all your activity
-`setacl`| for set wirte on blih ripository `epifetch setact <repo name> <user> <user_right>`
-`repo`| list all repository on blih server add `epifetch repo <name new repo>` for create new repo
+`activity`|Display all your activities
+`setacl`| to set, write on blih repository `epifetch setacl <repo name> <user> <user_right>`
+`repo`| list all repositories on blih server add `epifetch repo <name new repo>` to create a new repo
 
 
 ### Contributing
@@ -38,9 +38,9 @@ Command| Does...
 4. Push to the branch (`git push origin feature/fooBar`)
 5. Create a new Pull Request
 
-## this project is a work in progress !!!
+## This project is a work in progress !!!
 
-your contribution is welcomed
+your contribution is welcomed ! ! !
 
 ## Contact
 
