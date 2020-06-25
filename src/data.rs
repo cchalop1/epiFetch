@@ -54,19 +54,54 @@ pub struct Activites {
     module: String,
     module_link: String,
     module_code: String,
-    title_link: String,
+    pub title_link: String,
     timeline_start: String,
     timeline_end: String,
     timeline_barre: String,
     salle: String,
     token: Option<String>,
-    token_link: String,
+    pub token_link: String,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct Event {
+    pub code: String,
+    num_event: String,
+    seats: String,
+    nb_inscrits: String,
+    begin: String,
+    end: String,
+    id_activite: String,
+    allow_token: String,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct Activite {
+    pub scolaryear: String,
+    codemodule: String,
+    codeinstance: String,
+    codeacti: String,
+    call_ihk: Option<String>,
+    instance_location: String,
+    module_title: String,
+    pub title: String,
+    begin: String,
+    start: String,
+    nb_hours: String,
+    pub events: Vec<Event>,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct Document {
     pub title: String,
     pub fullpath: String,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct TokenData {
+    pub token: String,
+    pub rate: i32,
+    pub comment: String,
 }
 
 #[derive(Deserialize, Debug)]
@@ -133,6 +168,12 @@ pub struct BlihData {
 
 #[derive(Deserialize, Debug)]
 pub struct BlihResponse {
+    pub message: Option<String>,
+    pub error: Option<String>,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct IntaResponse {
     pub message: Option<String>,
     pub error: Option<String>,
 }
@@ -240,7 +281,7 @@ impl Board {
                             table.add_row(row!["token: ", token]);
                             println!("{}", token);
                         }
-                    },
+                    }
                     None => {
                         table.add_row(row!["token: ", "null"]);
                     }

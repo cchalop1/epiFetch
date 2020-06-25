@@ -13,7 +13,10 @@ extern crate serde_json;
 mod data;
 mod header;
 
-use data::{Blih, BlihData, BlihResponse, Board, Document, Home, ModulesNotes, Pass, Repos, User};
+use data::{
+    Activite, Blih, BlihData, BlihResponse, Board, Document, Home, IntaResponse, ModulesNotes,
+    Pass, Repos, TokenData, User,
+};
 
 use crypto::digest::Digest;
 use crypto::hmac::Hmac;
@@ -44,7 +47,7 @@ enum Opt {
         dl: Option<String>,
     },
     /// Display all activites
-    activity { idx: Option<i32> },
+    activity { idx: Option<i32>, r: Option<String> },
     /// Display all your notes
     notes,
     /// Display all your modules
@@ -59,7 +62,7 @@ enum Opt {
         user_right: String,
     },
     /// enter one token
-    token { idx: Option<i32> },
+    token { idx: i32, token: String },
 }
 
 fn main() {
@@ -85,9 +88,15 @@ fn start() {
             }
             (None, None) => fetch_home(&pass.autologin).print_projects(),
         },
-        Opt::activity { idx } => match idx {
-            Some(idx) => fetch_home(&pass.autologin).print_activity_detail(idx, &pass.autologin),
-            None => fetch_home(&pass.autologin).print_activity(),
+        Opt::activity { idx, r } => match (idx, r) {
+            (Some(idx), None) => {
+                fetch_home(&pass.autologin).print_activity_detail(idx, &pass.autologin)
+            }
+            (None, Some(_r)) => println!("pleas give me activity id"),
+            (None, None) => fetch_home(&pass.autologin).print_activity(),
+            (Some(idx), Some(_r)) => {
+                sub_to_activity(fetch_home(&pass.autologin), &pass.autologin, idx)
+            }
         },
         Opt::notes => fetch_note_modules(&pass.autologin).print_notes(),
         Opt::modules => fetch_note_modules(&pass.autologin).print_modules(),
@@ -100,10 +109,7 @@ fn start() {
             user,
             user_right,
         } => fetch_right_repo(&pass, repo_name, user, user_right),
-        Opt::token { idx } => match idx {
-            Some(idx) => println!("{}", idx),
-            None => fetch_all_token_open(&pass.autologin),
-        },
+        Opt::token { idx, token } => fetch_all_token_open(&pass.autologin, idx, token),
     };
 }
 
@@ -207,7 +213,7 @@ fn download_project_file(idx: i32, autologin_url: &String) {
                 let mut resp = reqwest::get(&url_file[..]).expect("request failed");
                 let mut out = File::create(&doc.title[..]).expect("failed to create file");
                 io::copy(&mut resp, &mut out).expect("failed to copy content");
-            };
+            }
         }
         None => return,
     }
@@ -219,12 +225,25 @@ fn fetch_home(autologin_url: &String) -> Board {
     home.board
 }
 
-fn fetch_all_token_open(autologin_url: &String) {
-    let url: String = builder_url_autologin(&autologin_url, "");
+fn fetch_all_token_open(autologin_url: &String, idx: i32, token: String) {
+    let mut url: String = builder_url_autologin(&autologin_url, "");
     let home: Home = reqwest::get(&url[..]).unwrap().json().unwrap();
-    for act in home.board.activites.iter() {
-        println!("{:?}", act);
-    }
+    let activity = &home.board.activites[idx as usize];
+    url = builder_url_autologin(&autologin_url, &(activity.token_link)[..]);
+    let data: TokenData = TokenData {
+        token: token,
+        rate: 5,
+        comment: String::new(),
+    };
+    let resp: IntaResponse = reqwest::Client::new()
+        .post(&url[..])
+        .header("Content-Type", "application/json")
+        .body(serde_json::to_string(&data).unwrap())
+        .send()
+        .unwrap()
+        .json()
+        .unwrap();
+    println!("{:?}", resp);
 }
 
 fn fetch_user(autologin_url: &String) -> User {
@@ -237,6 +256,30 @@ fn fetch_note_modules(autologin_url: &String) -> ModulesNotes {
     let url: String =
         builder_url_autologin(&autologin_url, &format!("/user/{}/notes/", user.login)[..]);
     reqwest::get(&url[..]).unwrap().json().unwrap()
+}
+
+fn sub_to_activity(board: Board, autologin_url: &String, idx: i32) {
+    let activitys = &board.activites[idx as usize];
+    let mut url: String = builder_url_autologin(&autologin_url, &(activitys.title_link)[..]);
+    let activity: Activite = reqwest::get(&url[..]).unwrap().json().unwrap();
+    url = builder_url_autologin(
+        autologin_url,
+        &format!(
+            "{}{}/register",
+            activitys.title_link, activity.events[0].code
+        )[..],
+    );
+    let res: IntaResponse = reqwest::Client::new()
+        .post(&url[..])
+        .header("Content-Type", "application/json")
+        .send()
+        .unwrap()
+        .json()
+        .unwrap();
+    match res.error {
+        Some(e) => println!("Error: {}", e),
+        None => println!("OK"),
+    }
 }
 
 fn builder_url_autologin(autologin_url: &String, path: &str) -> String {
