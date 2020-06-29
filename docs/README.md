@@ -25,10 +25,10 @@ Command| Does...
 `project`|Display all current projects and to see the details put the id after the project `epifetch project <project id>`
 `notes`|Display all your marks
 `modules`|Display all your modules
-`activity`|Display all your activities
+`activity`|Display all your activities `epifetch activity <activity id>` for detail `epifetch activity <activity id> <r>` for register
 `setacl`| to set, write on blih repository `epifetch setacl <repo name> <user> <user_right>`
 `repo`| list all repositories on blih server add `epifetch repo <name new repo>` to create a new repo
-
+`toekn`| fill token activity `epifetch token <activity id> <token>`
 
 ### Contributing
 
